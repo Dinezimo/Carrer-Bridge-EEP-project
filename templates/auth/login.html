@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+{% block title %}Connexion · CV Assistant{% endblock %}
+{% block content %}
+<h1>Connexion</h1>
+<form method="post" class="card">
+  {% csrf_token %}
+  <label>Nom d'utilisateur
+    <input type="text" name="username" required />
+  </label>
+  <label>Mot de passe
+    <input type="password" name="password" required />
+  </label>
+  <button type="submit" class="button primary">Se connecter</button>
+</form>
+<p class="hint">Astuce: en dev, utilisez l'utilisateur <code>demo</code> / mot de passe <code>demo12345</code> après exécution du bootstrap.</p>
+{% endblock %}

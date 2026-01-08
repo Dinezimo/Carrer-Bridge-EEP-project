@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+{% block title %}Postuler · {{ job.title }}{% endblock %}
+{% block content %}
+<h1>Postuler à « {{ job.title }} »</h1>
+<p class="muted">Votre candidature sera reçue et analysée automatiquement. La décision finale reste humaine.</p>
+
+<form method="post" enctype="multipart/form-data" class="card">
+  {% csrf_token %}
+  <div class="grid-2">
+    <label>{{ form.candidate_name.label }}
+      {{ form.candidate_name }}
+    </label>
+    <label>{{ form.candidate_email.label }}
+      {{ form.candidate_email }}
+    </label>
+  </div>
+  <div class="grid-2">
+    <label>{{ form.candidate_phone.label }}
+      {{ form.candidate_phone }}
+    </label>
+    <label>{{ form.location.label }}
+      {{ form.location }}
+    </label>
+  </div>
+  <label>{{ form.linkedin_url.label }}
+    {{ form.linkedin_url }}
+  </label>
+  <label>{{ form.cv_file.label }}
+    {{ form.cv_file }}
+    <small class="muted">Formats acceptés : PDF, DOCX</small>
+  </label>
+  <button class="button primary" type="submit">Envoyer la candidature</button>
+</form>
+
+<p class="small muted">Politique : vos données sont utilisées uniquement pour ce recrutement.</p>
+{% endblock %}

@@ -1,0 +1,9 @@
+Django>=5.2,<6
+gunicorn>=21.2
+whitenoise>=6.6
+dj-database-url>=2.1
+pdfminer.six>=20221105
+python-docx>=0.8.11
+chardet>=5.2
+lxml>=4.9
+psycopg2-binary>=2.9

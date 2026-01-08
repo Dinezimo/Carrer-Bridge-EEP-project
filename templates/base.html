@@ -1,0 +1,44 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{% block title %}CV Assistant{% endblock %}</title>
+  <link rel="stylesheet" href="{% static 'styles.css' %}">
+</head>
+<body>
+  <header class="site-header">
+    <div class="container flex between center-v">
+      <a class="brand" href="/dashboard/">CV Assistant</a>
+      <nav class="nav">
+        {% if user.is_authenticated %}
+          <a href="/dashboard/">Tableau de bord</a>
+          <a class="button" href="/jobs/new/">Créer une offre</a>
+          <a href="/logout/">Déconnexion</a>
+        {% else %}
+          <a class="button" href="/login/">Connexion</a>
+        {% endif %}
+      </nav>
+    </div>
+  </header>
+
+  <main class="container">
+    {% if messages %}
+      <div class="messages">
+        {% for message in messages %}
+          <div class="message {{ message.tags }}">{{ message }}</div>
+        {% endfor %}
+      </div>
+    {% endif %}
+
+    {% block content %}{% endblock %}
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">
+      <small>Assistant IA de tri de CV — Décision finale toujours humaine.</small>
+    </div>
+  </footer>
+</body>
+</html>

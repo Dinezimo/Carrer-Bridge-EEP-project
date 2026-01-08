@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+{% block title %}Tableau de bord · CV Assistant{% endblock %}
+{% block content %}
+<div class="header-row">
+  <h1>Vos Recrutements</h1>
+  <a class="button primary" href="/jobs/new/">Créer une offre</a>
+</div>
+
+{% if jobs %}
+  <div class="cards">
+    {% for job in jobs %}
+      <a class="card link" href="/jobs/{{ job.id }}/">
+        <h3>{{ job.title }}</h3>
+        <p class="muted">{{ job.location }} · {{ job.get_status_display|default:job.status }}</p>
+        <p>{{ job.description|truncatewords:20 }}</p>
+        <div class="meta">
+          <span>{{ job.applications.count }} candidatures</span>
+          <span>Créé le {{ job.created_at|date:'d/m/Y H:i' }}</span>
+        </div>
+      </a>
+    {% endfor %}
+  </div>
+{% else %}
+  <div class="empty">
+    <p>Aucune offre pour le moment.</p>
+    <a class="button" href="/jobs/new/">Créer votre première offre</a>
+  </div>
+{% endif %}
+{% endblock %}

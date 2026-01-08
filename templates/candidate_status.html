@@ -1,0 +1,19 @@
+{% extends 'base.html' %}
+{% block title %}Statut de votre candidature{% endblock %}
+{% block content %}
+<h1>Statut de votre candidature</h1>
+<div class="card">
+  <h2>{{ status_label }}</h2>
+  <p class="muted">{{ status_desc }}</p>
+  <p><strong>Poste :</strong> {{ app.job.title }}</p>
+  <p><strong>Score estimé :</strong> {{ app.score }}%</p>
+  {% if app.feedback_suggestions %}
+    <details class="mt-1">
+      <summary>Voir le retour</summary>
+      <pre style="white-space:pre-wrap">{{ app.feedback_suggestions }}</pre>
+    </details>
+  {% endif %}
+</div>
+
+<p class="small muted">Ce retour est généré automatiquement pour vous aider. La décision finale est humaine.</p>
+{% endblock %}

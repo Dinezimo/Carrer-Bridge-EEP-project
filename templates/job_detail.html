@@ -1,0 +1,145 @@
+{% extends 'base.html' %}
+{% block title %}{{ job.title }} · CV Assistant{% endblock %}
+{% block content %}
+<div class="header-row">
+  <div>
+    <h1>{{ job.title }}</h1>
+    <p class="muted">{{ job.location }} · Créé le {{ job.created_at|date:'d/m/Y H:i' }}</p>
+  </div>
+  <div class="actions">
+    <a class="button" href="/dashboard/">← Retour</a>
+    <a class="button" href="/jobs/{{ job.id }}/export/">Exporter la shortlist (CSV)</a>
+  </div>
+</div>
+
+<section class="card mt-2">
+  <h3>Lien public de candidature</h3>
+  <p class="muted">Partagez ce lien avec les candidats pour qu'ils postulent sans ressaisie.</p>
+  <div class="row gap">
+    <input id="applyLink" type="text" readonly value="{{ apply_link }}" />
+    <button class="button" type="button" onclick="navigator.clipboard.writeText(document.getElementById('applyLink').value)">Copier</button>
+  </div>
+</section>
+
+<section class="card">
+  <h3>Critères</h3>
+  <div class="grid-3">
+    <div>
+      <strong>Compétences clés</strong>
+      <p>{% if job.skills %}{{ job.skills|join:', ' }}{% else %}<span class="muted">Aucune</span>{% endif %}</p>
+    </div>
+    <div>
+      <strong>Expérience minimale</strong>
+      <p>{{ job.min_experience_years }} an(s)</p>
+    </div>
+    <div>
+      <strong>Niveaux d'études</strong>
+      <p>{% if job.education_levels %}{{ job.education_levels|join:', ' }}{% else %}<span class="muted">Non spécifié</span>{% endif %}</p>
+    </div>
+  </div>
+  {% if job.description %}
+    <details class="mt-1">
+      <summary>Description du poste</summary>
+      <p>{{ job.description|linebreaks }}</p>
+    </details>
+  {% endif %}
+</section>
+
+<section class="grid-2 mt-2">
+  <form method="post" enctype="multipart/form-data" class="card">
+    {% csrf_token %}
+    <input type="hidden" name="action" value="upload" />
+    <h3>Importer des CV</h3>
+    <p class="muted">Formats supportés : PDF, DOCX. Sélection multiple autorisée.</p>
+    <label>
+      {{ upload_form.files }}
+    </label>
+    <button type="submit" class="button primary">Analyser</button>
+  </form>
+
+  <form method="get" class="card">
+    <h3>Filtres</h3>
+    <div class="grid-3">
+      <label>
+        Score min
+        <input type="number" name="min_score" min="0" max="100" value="{{ filters.min_score }}" />
+      </label>
+      <label>
+        Catégorie
+        <select name="category">
+          <option value="">Toutes</option>
+          <option value="tres_pertinent" {% if filters.category == 'tres_pertinent' %}selected{% endif %}>Très pertinent</option>
+          <option value="pertinent" {% if filters.category == 'pertinent' %}selected{% endif %}>Pertinent</option>
+          <option value="a_revoir" {% if filters.category == 'a_revoir' %}selected{% endif %}>À revoir</option>
+          <option value="peu_pertinent" {% if filters.category == 'peu_pertinent' %}selected{% endif %}>Peu pertinent</option>
+        </select>
+      </label>
+      <label>
+        Mot-clé (compétence)
+        <input type="text" name="skill" value="{{ filters.skill }}" placeholder="ex: python" />
+      </label>
+    </div>
+    <label class="checkbox">
+      <input type="checkbox" name="only_shortlist" value="1" {% if filters.only_shortlist %}checked{% endif %} />
+      Afficher uniquement la shortlist
+    </label>
+    <div>
+      <button class="button" type="submit">Appliquer</button>
+      <a class="button ghost" href="/jobs/{{ job.id }}/">Réinitialiser</a>
+    </div>
+  </form>
+</section>
+
+<section class="mt-2">
+  <h2>Candidatures ({{ applications|length }})</h2>
+  {% if applications %}
+  <div class="cards">
+    {% for a in applications %}
+      <div class="card">
+        <div class="row between center-v">
+          <div>
+            <h3>{{ a.candidate_name|default:'Candidat' }}</h3>
+            <p class="muted">Score: <strong>{{ a.score }}%</strong> · {{ a.get_category_display }}</p>
+          </div>
+          <div class="tags">
+            {% if a.is_shortlisted %}
+              <span class="tag success">Shortlist</span>
+            {% endif %}
+          </div>
+        </div>
+        <p class="small">
+          {% if a.candidate_email %}📧 {{ a.candidate_email }} · {% endif %}
+          {% if a.candidate_phone %}📱 {{ a.candidate_phone }} · {% endif %}
+          <a href="{{ a.cv_file.url }}" target="_blank">Voir le CV</a>
+        </p>
+        {% if a.matched_skills %}
+          <p><strong>Compétences correspondantes:</strong> {{ a.matched_skills|join:', ' }}</p>
+        {% endif %}
+        {% if a.missing_skills %}
+          <p><strong>Compétences manquantes:</strong> {{ a.missing_skills|join:', ' }}</p>
+        {% endif %}
+        {% if a.strengths %}
+          <details>
+            <summary>Pourquoi ce score ?</summary>
+            <ul>
+              {% for s in a.strengths %}<li>{{ s }}</li>{% endfor %}
+              {% for g in a.gaps %}<li class="muted">{{ g }}</li>{% endfor %}
+            </ul>
+          </details>
+        {% endif %}
+        <div class="row gap mt-1">
+          <a class="button {% if a.is_shortlisted %}secondary{% else %}primary{% endif %}" href="/apps/{{ a.id }}/toggle-shortlist/">
+            {% if a.is_shortlisted %}Retirer de la shortlist{% else %}Ajouter à la shortlist{% endif %}
+          </a>
+          <a class="button" href="/apps/{{ a.id }}/reject/">Marquer non retenu</a>
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+  {% else %}
+    <div class="empty">
+      <p>Aucune candidature pour le moment. Importez des CV pour commencer l'analyse.</p>
+    </div>
+  {% endif %}
+</section>
+{% endblock %}

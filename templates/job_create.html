@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+{% block title %}Nouvelle offre · CV Assistant{% endblock %}
+{% block content %}
+<h1>Créer une nouvelle offre</h1>
+<form method="post" class="card">
+  {% csrf_token %}
+  <div class="grid-2">
+    <label>{{ form.title.label }}
+      {{ form.title }}
+    </label>
+    <label>{{ form.location.label }}
+      {{ form.location }}
+    </label>
+  </div>
+  <label>{{ form.description.label }}
+    {{ form.description }}
+  </label>
+  <div class="grid-2">
+    <label>{{ form.min_experience_years.label }}
+      {{ form.min_experience_years }}
+    </label>
+    <label>{{ form.skills_csv.label }}
+      {{ form.skills_csv }}
+      <small class="muted">Ex: python, gestion de projet, SQL</small>
+    </label>
+  </div>
+  <label>{{ form.education_levels_csv.label }}
+    {{ form.education_levels_csv }}
+    <small class="muted">Ex: Licence, Master</small>
+  </label>
+  <button type="submit" class="button primary">Créer l'offre</button>
+</form>
+{% endblock %}
