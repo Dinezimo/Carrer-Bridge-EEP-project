@@ -1,12 +1,23 @@
 import os
 import re
+import tempfile
 from typing import Dict, List
 
-from pdfminer.high_level import extract_text as pdf_extract_text
-from docx import Document
+# Optional dependencies: pdfminer and python-docx
+try:
+    from pdfminer.high_level import extract_text as pdf_extract_text
+except Exception:  # ModuleNotFoundError or other import issues
+    pdf_extract_text = None
+
+try:
+    from docx import Document
+except Exception:
+    Document = None
 
 
 def extract_text_from_pdf(path: str) -> str:
+    if pdf_extract_text is None:
+        return ""
     try:
         return pdf_extract_text(path) or ""
     except Exception:
@@ -14,6 +25,8 @@ def extract_text_from_pdf(path: str) -> str:
 
 
 def extract_text_from_docx(path: str) -> str:
+    if Document is None:
+        return ""
     try:
         doc = Document(path)
         return "\n".join(p.text for p in doc.paragraphs)
@@ -31,6 +44,34 @@ def extract_text_from_file(path: str) -> str:
     try:
         with open(path, "r", encoding="utf-8", errors="ignore") as f:
             return f.read()
+    except Exception:
+        return ""
+
+
+def extract_text_from_upload(dj_file) -> str:
+    """Extract text from a Django UploadedFile/FileField across any storage.
+
+    This writes the file to a temporary file (preserving extension when possible)
+    and reuses extract_text_from_file(), ensuring compatibility with
+    remote storages like Cloudinary where .path may not exist.
+    """
+    try:
+        name = getattr(dj_file, "name", "") or ""
+    except Exception:
+        name = ""
+    suffix = os.path.splitext(name)[1].lower() if name else ""
+    try:
+        with tempfile.NamedTemporaryFile(suffix=suffix) as tmp:
+            # Stream in chunks if available
+            try:
+                iterator = dj_file.chunks()
+            except Exception:
+                iterator = [dj_file.read()]
+            for chunk in iterator:
+                if chunk:
+                    tmp.write(chunk)
+            tmp.flush()
+            return extract_text_from_file(tmp.name)
     except Exception:
         return ""
 

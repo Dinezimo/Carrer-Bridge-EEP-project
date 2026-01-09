@@ -9,7 +9,7 @@ from django.db.models import Q
 
 from .models import Job, Application
 from .forms import JobForm, CVUploadForm, CandidateApplyForm
-from .utils import extract_text_from_file, analyze_cv_against_job
+from .utils import extract_text_from_upload, analyze_cv_against_job
 
 
 def redirect_to_dashboard(request: HttpRequest):
@@ -71,9 +71,8 @@ def job_detail(request: HttpRequest, job_id: int):
             for f in files:
                 app = Application(job=job, cv_file=f)
                 app.save()  # save to get file on disk
-                # Extract and analyze
-                cv_path = app.cv_file.path
-                text = extract_text_from_file(cv_path)
+                # Extract and analyze (supports remote storage)
+                text = extract_text_from_upload(app.cv_file)
                 app.cv_text = text
                 analysis = analyze_cv_against_job(text, job)
                 app.score = analysis["score"]
@@ -219,7 +218,7 @@ def candidate_apply(request: HttpRequest, job_id: int):
                 status="in_review",
             )
             app.save()
-            text = extract_text_from_file(app.cv_file.path)
+            text = extract_text_from_upload(app.cv_file)
             app.cv_text = text
             analysis = analyze_cv_against_job(text, job)
             app.score = analysis["score"]

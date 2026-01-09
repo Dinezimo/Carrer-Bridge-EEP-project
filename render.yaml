@@ -4,12 +4,8 @@ services:
     env: python
     plan: free
     autoDeploy: true
-    buildCommand: pip install -r requirements.txt && python manage.py collectstatic --noinput && python manage.py migrate --noinput
-    startCommand: gunicorn cvassistant.wsgi:application --bind 0.0.0.0:$PORT
-    disk:
-      name: data
-      mountPath: /var/data
-      sizeGB: 1
+    buildCommand: pip install -r requirements.txt && python manage.py collectstatic --noinput
+    startCommand: python manage.py migrate --noinput && gunicorn cvassistant.wsgi:application --bind 0.0.0.0:$PORT
     envVars:
       - key: DJANGO_SECRET_KEY
         generateValue: true
@@ -23,7 +19,15 @@ services:
         value: true
       - key: RENDER
         value: true
-      - key: SQLITE_PATH
-        value: /var/data/db.sqlite3
-      - key: MEDIA_ROOT
-        value: /var/data/media
+      - key: DATABASE_URL
+        fromDatabase:
+          name: career-bridge-db
+          property: connectionString
+      - key: CLOUDINARY_URL
+        sync: false
+
+databases:
+  - name: career-bridge-db
+    plan: free
+    databaseName: career_bridge
+    user: career_bridge_user

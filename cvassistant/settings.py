@@ -42,7 +42,9 @@ INSTALLED_APPS = [
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
+    'cloudinary_storage',
     'django.contrib.staticfiles',
+    'cloudinary',
     'core',
 ]
 
@@ -92,12 +94,16 @@ DATABASES = {
 DATABASE_URL = os.getenv('DATABASE_URL')
 if dj_database_url and DATABASE_URL:
     DATABASES['default'] = dj_database_url.parse(DATABASE_URL, conn_max_age=600)
-elif os.getenv('RENDER'):  # Use persistent disk on Render if configured
-    sqlite_path = os.getenv('SQLITE_PATH', '/var/data/db.sqlite3')
-    DATABASES['default'] = {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': sqlite_path,
-    }
+else:
+    # If a persistent sqlite path is provided and its directory exists (e.g., on Render at runtime), use it.
+    sqlite_path_env = os.getenv('SQLITE_PATH')
+    if sqlite_path_env:
+        sqlite_dir = os.path.dirname(sqlite_path_env)
+        if os.path.isdir(sqlite_dir):
+            DATABASES['default'] = {
+                'ENGINE': 'django.db.backends.sqlite3',
+                'NAME': sqlite_path_env,
+            }
 
 
 # Password validation
@@ -153,6 +159,10 @@ LOGOUT_REDIRECT_URL = '/login/'
 
 # Proxy SSL header for platforms behind reverse proxies
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
+# Optional: store media on Cloudinary when CLOUDINARY_URL is set
+if os.getenv('CLOUDINARY_URL'):
+    DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
